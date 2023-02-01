@@ -234,13 +234,13 @@ fn build_clif_sysroot_for_triple(
     }
 
     // Build sysroot
-    let mut rustflags = " -Zforce-unstable-if-unmarked -Cpanic=abort".to_string();
-    rustflags.push_str(&format!(" -Zcodegen-backend={}", cg_clif_dylib_path.to_str().unwrap()));
+    let mut rustflags = "\x1f-Zforce-unstable-if-unmarked\x1f-Cpanic=abort".to_string();
+    rustflags.push_str(&format!("\x1f-Zcodegen-backend={}", cg_clif_dylib_path.to_str().unwrap()));
     // Necessary for MinGW to find rsbegin.o and rsend.o
     rustflags
-        .push_str(&format!(" --sysroot={}", RTSTARTUP_SYSROOT.to_path(dirs).to_str().unwrap()));
+        .push_str(&format!("\x1f--sysroot={}", RTSTARTUP_SYSROOT.to_path(dirs).to_str().unwrap()));
     if channel == "release" {
-        rustflags.push_str(" -Zmir-opt-level=3");
+        rustflags.push_str("\x1f-Zmir-opt-level=3");
     }
     compiler.rustflags += &rustflags;
     let mut build_cmd = STANDARD_LIBRARY.build(&compiler, dirs);
@@ -250,16 +250,18 @@ fn build_clif_sysroot_for_triple(
     build_cmd.env("__CARGO_DEFAULT_LIB_METADATA", "cg_clif");
     spawn_and_wait(build_cmd);
 
-    for entry in fs::read_dir(build_dir.join("deps")).unwrap() {
-        let entry = entry.unwrap();
-        if let Some(ext) = entry.path().extension() {
-            if ext == "rmeta" || ext == "d" || ext == "dSYM" || ext == "clif" {
+    if let Ok(entries) = fs::read_dir(build_dir.join("deps")) {
+        for entry in entries {
+            let entry = entry.unwrap();
+            if let Some(ext) = entry.path().extension() {
+                if ext == "rmeta" || ext == "d" || ext == "dSYM" || ext == "clif" {
+                    continue;
+                }
+            } else {
                 continue;
-            }
-        } else {
-            continue;
-        };
-        target_libs.libs.push(entry.path());
+            };
+            target_libs.libs.push(entry.path());
+        }
     }
 
     target_libs

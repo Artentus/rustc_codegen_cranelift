@@ -775,7 +775,12 @@ fn codegen_stmt<'tcx>(
                         NullOp::SizeOf => layout.size.bytes(),
                         NullOp::AlignOf => layout.align.abi.bytes(),
                     };
-                    let val = CValue::const_val(fx, fx.layout_of(fx.tcx.types.usize), val.into());
+                    let val = CValue::const_val(
+                        fx,
+                        fx.layout_of(fx.tcx.types.usize),
+                        ty::ScalarInt::try_from_uint(val, fx.layout_of(fx.tcx.types.usize).size)
+                            .unwrap(),
+                    );
                     lval.write_cvalue(fx, val);
                 }
                 Rvalue::Aggregate(ref kind, ref operands) => match kind.as_ref() {

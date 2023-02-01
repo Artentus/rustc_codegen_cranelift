@@ -154,7 +154,7 @@ const EXTENDED_SYSROOT_SUITE: &[TestCase] = &[
         REGEX.clean(&runner.dirs);
 
         // newer aho_corasick versions throw a deprecation warning
-        let lint_rust_flags = format!("{} --cap-lints warn", runner.target_compiler.rustflags);
+        let lint_rust_flags = format!("{}\x1f--cap-lints warn", runner.target_compiler.rustflags);
 
         let mut build_cmd = REGEX.build(&runner.target_compiler, &runner.dirs);
         build_cmd.arg("--example").arg("shootout-regex-dna");
@@ -198,7 +198,7 @@ const EXTENDED_SYSROOT_SUITE: &[TestCase] = &[
         REGEX.clean(&runner.dirs);
 
         // newer aho_corasick versions throw a deprecation warning
-        let lint_rust_flags = format!("{} --cap-lints warn", runner.target_compiler.rustflags);
+        let lint_rust_flags = format!("{}\x1f--cap-lints warn", runner.target_compiler.rustflags);
 
         if runner.is_native {
             let mut run_cmd = REGEX.test(&runner.target_compiler, &runner.dirs);
@@ -303,8 +303,8 @@ struct TestRunner {
 impl TestRunner {
     pub fn new(dirs: Dirs, mut target_compiler: Compiler, is_native: bool) -> Self {
         if let Ok(rustflags) = env::var("RUSTFLAGS") {
-            target_compiler.rustflags.push(' ');
-            target_compiler.rustflags.push_str(&rustflags);
+            target_compiler.rustflags.push_str("\x1f");
+            target_compiler.rustflags.push_str(&rustflags.replace(" ", "\x1f"));
         }
         if let Ok(rustdocflags) = env::var("RUSTDOCFLAGS") {
             target_compiler.rustdocflags.push(' ');
@@ -313,7 +313,9 @@ impl TestRunner {
 
         // FIXME fix `#[linkage = "extern_weak"]` without this
         if target_compiler.triple.contains("darwin") {
-            target_compiler.rustflags.push_str(" -Clink-arg=-undefined -Clink-arg=dynamic_lookup");
+            target_compiler
+                .rustflags
+                .push_str("\x1f-Clink-arg=-undefined\x1f-Clink-arg=dynamic_lookup");
         }
 
         let jit_supported = is_native
@@ -387,7 +389,7 @@ impl TestRunner {
         S: AsRef<OsStr>,
     {
         let mut cmd = Command::new(&self.target_compiler.rustc);
-        cmd.args(self.target_compiler.rustflags.split_whitespace());
+        cmd.args(self.target_compiler.rustflags.split('\x1f').filter(|a| a.len() > 0));
         cmd.arg("-L");
         cmd.arg(format!("crate={}", BUILD_EXAMPLE_OUT_DIR.to_path(&self.dirs).display()));
         cmd.arg("--out-dir");

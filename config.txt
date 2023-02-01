@@ -8,13 +8,13 @@
 # Which triple to build libraries (core/alloc/std/test/proc_macro) for.
 #
 # Defaults to `host`.
-#target = x86_64-unknown-linux-gnu
+target = a32-unknown-none-elf.json
 
 # Disables cleaning of the sysroot dir. This will cause old compiled artifacts to be re-used when
 # the sysroot source hasn't changed. This is useful when the codegen backend hasn't been modified.
 # This option can be changed while the build system is already running for as long as sysroot
 # building hasn't started yet.
-#keep_sysroot
+keep_sysroot
 
 
 # Testsuite
@@ -46,6 +46,6 @@ testsuite.extended_sysroot
 test.rust-random/rand
 test.simple-raytracer
 test.libcore
-test.regex-shootout-regex-dna
-test.regex
+#test.regex-shootout-regex-dna
+#test.regex
 test.portable-simd

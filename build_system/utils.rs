@@ -35,7 +35,7 @@ impl Compiler {
         match self.triple.as_str() {
             "aarch64-unknown-linux-gnu" => {
                 // We are cross-compiling for aarch64. Use the correct linker and run tests in qemu.
-                self.rustflags += " -Clinker=aarch64-linux-gnu-gcc";
+                self.rustflags += "\x1f-Clinker=aarch64-linux-gnu-gcc";
                 self.rustdocflags += " -Clinker=aarch64-linux-gnu-gcc";
                 self.runner = vec![
                     "qemu-aarch64".to_owned(),
@@ -45,7 +45,7 @@ impl Compiler {
             }
             "s390x-unknown-linux-gnu" => {
                 // We are cross-compiling for s390x. Use the correct linker and run tests in qemu.
-                self.rustflags += " -Clinker=s390x-linux-gnu-gcc";
+                self.rustflags += "\x1f-Clinker=s390x-linux-gnu-gcc";
                 self.rustdocflags += " -Clinker=s390x-linux-gnu-gcc";
                 self.runner = vec![
                     "qemu-s390x".to_owned(),
@@ -108,7 +108,7 @@ impl CargoProject {
 
         cmd.env("RUSTC", &compiler.rustc);
         cmd.env("RUSTDOC", &compiler.rustdoc);
-        cmd.env("RUSTFLAGS", &compiler.rustflags);
+        cmd.env("CARGO_ENCODED_RUSTFLAGS", &compiler.rustflags.trim_matches('\x1f'));
         cmd.env("RUSTDOCFLAGS", &compiler.rustdocflags);
         if !compiler.runner.is_empty() {
             cmd.env(
