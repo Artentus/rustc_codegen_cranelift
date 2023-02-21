@@ -243,7 +243,7 @@ fn build_clif_sysroot_for_triple(
         .push_str(&format!("\x1f--sysroot={}", RTSTARTUP_SYSROOT.to_path(dirs).to_str().unwrap()));
     if channel == "release" {
         // FIXME re-enable DataflowConstProp once rust-lang/rust#108166 is fixed
-        rustflags.push_str("\x1f-Zmir-opt-level=3 -Zmir-enable-passes=-DataflowConstProp");
+        rustflags.push_str("\x1f-Zmir-opt-level=3\x1f-Zmir-enable-passes=-DataflowConstProp");
     }
     compiler.rustflags += &rustflags;
     let mut build_cmd = STANDARD_LIBRARY.build(&compiler, dirs);

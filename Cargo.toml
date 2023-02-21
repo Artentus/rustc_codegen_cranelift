@@ -15,14 +15,14 @@ crate-type = ["dylib"]
 
 [dependencies]
 # These have to be in sync with each other
-cranelift-codegen = { version = "0.93", features = ["unwind", "all-arch"] }
-cranelift-frontend = { version = "0.93" }
-cranelift-module = { version = "0.93" }
-cranelift-native = { version = "0.93" }
-cranelift-jit = { version = "0.93", optional = true }
-cranelift-object = { version = "0.93" }
+cranelift-codegen = { version = "0.94", features = ["unwind", "all-arch"] }
+cranelift-frontend = { version = "0.94" }
+cranelift-module = { version = "0.94" }
+cranelift-native = { version = "0.94" }
+cranelift-jit = { version = "0.94", optional = true }
+cranelift-object = { version = "0.94" }
 target-lexicon = { git = "https://github.com/Artentus/target-lexicon.git" }
-gimli = { version = "0.26.0", default-features = false, features = ["write"]}
+gimli = { version = "0.27.0", default-features = false, features = ["write"]}
 object = { git = "https://github.com/Artentus/object", default-features = false, features = ["std", "read_core", "write", "archive", "coff", "elf", "macho", "pe"] }
 
 indexmap = "1.9.1"
