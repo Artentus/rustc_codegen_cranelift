@@ -110,11 +110,8 @@ rm tests/incremental/spike-neg2.rs # same
 
 rm tests/ui/simd/intrinsic/generic-reduction-pass.rs # simd_reduce_add_unordered doesn't accept an accumulator for integer vectors
 
-rm tests/ui/simd/intrinsic/generic-as.rs # crash when accessing vector type filed (#1318)
+rm tests/ui/simd/intrinsic/generic-as.rs # crash when accessing vector type field (#1318)
 rm tests/ui/simd/simd-bitmask.rs # crash
-
-rm tests/ui/dyn-star/dyn-star-to-dyn.rs
-rm tests/ui/dyn-star/dispatch-on-pin-mut.rs
 
 # bugs in the test suite
 # ======================

@@ -289,7 +289,7 @@ pub(crate) fn codegen_checked_int_binop<'tcx>(
         _ => bug!("binop {:?} on checked int/uint lhs: {:?} rhs: {:?}", bin_op, in_lhs, in_rhs),
     };
 
-    let out_layout = fx.layout_of(fx.tcx.mk_tup([in_lhs.layout().ty, fx.tcx.types.bool].iter()));
+    let out_layout = fx.layout_of(fx.tcx.intern_tup(&[in_lhs.layout().ty, fx.tcx.types.bool]));
     CValue::by_val_pair(res, has_overflow, out_layout)
 }
 
@@ -347,12 +347,20 @@ pub(crate) fn codegen_float_binop<'tcx>(
         BinOp::Mul => b.fmul(lhs, rhs),
         BinOp::Div => b.fdiv(lhs, rhs),
         BinOp::Rem => {
-            let name = match in_lhs.layout().ty.kind() {
-                ty::Float(FloatTy::F32) => "fmodf",
-                ty::Float(FloatTy::F64) => "fmod",
+            let (name, ty) = match in_lhs.layout().ty.kind() {
+                ty::Float(FloatTy::F32) => ("fmodf", types::F32),
+                ty::Float(FloatTy::F64) => ("fmod", types::F64),
                 _ => bug!(),
             };
-            return fx.easy_call(name, &[in_lhs, in_rhs], in_lhs.layout().ty);
+
+            let ret_val = fx.lib_call(
+                name,
+                vec![AbiParam::new(ty), AbiParam::new(ty)],
+                vec![AbiParam::new(ty)],
+                &[lhs, rhs],
+            )[0];
+
+            return CValue::by_val(ret_val, in_lhs.layout());
         }
         BinOp::Eq | BinOp::Lt | BinOp::Le | BinOp::Ne | BinOp::Ge | BinOp::Gt => {
             let fltcc = match bin_op {

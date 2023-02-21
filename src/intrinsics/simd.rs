@@ -141,7 +141,7 @@ pub(super) fn codegen_simd_intrinsic_call<'tcx>(
                 let idx_ty = fx.monomorphize(idx.ty(fx.mir, fx.tcx));
                 match idx_ty.kind() {
                     ty::Array(ty, len) if matches!(ty.kind(), ty::Uint(ty::UintTy::U32)) => len
-                        .try_eval_usize(fx.tcx, ty::ParamEnv::reveal_all())
+                        .try_eval_target_usize(fx.tcx, ty::ParamEnv::reveal_all())
                         .unwrap_or_else(|| {
                             span_bug!(span, "could not evaluate shuffle index array length")
                         })
@@ -279,9 +279,8 @@ pub(super) fn codegen_simd_intrinsic_call<'tcx>(
                 fx.tcx.sess.span_warn(span, "Index argument for `simd_extract` is not a constant");
                 let trap_block = fx.bcx.create_block();
                 let true_ = fx.bcx.ins().iconst(types::I8, 1);
-                fx.bcx.ins().brnz(true_, trap_block, &[]);
                 let ret_block = fx.get_block(target);
-                fx.bcx.ins().jump(ret_block, &[]);
+                fx.bcx.ins().brif(true_, trap_block, &[], ret_block, &[]);
                 fx.bcx.switch_to_block(trap_block);
                 crate::trap::trap_unimplemented(
                     fx,
@@ -735,7 +734,7 @@ pub(super) fn codegen_simd_intrinsic_call<'tcx>(
                 ty::Uint(i) if i.bit_width() == Some(expected_int_bits) => {}
                 ty::Array(elem, len)
                     if matches!(elem.kind(), ty::Uint(ty::UintTy::U8))
-                        && len.try_eval_usize(fx.tcx, ty::ParamEnv::reveal_all())
+                        && len.try_eval_target_usize(fx.tcx, ty::ParamEnv::reveal_all())
                             == Some(expected_bytes) => {}
                 _ => {
                     fx.tcx.sess.span_fatal(
@@ -825,8 +824,7 @@ pub(super) fn codegen_simd_intrinsic_call<'tcx>(
                 let next = fx.bcx.create_block();
                 let res_lane = fx.bcx.append_block_param(next, lane_clif_ty);
 
-                fx.bcx.ins().brnz(mask_lane, if_enabled, &[]);
-                fx.bcx.ins().jump(if_disabled, &[]);
+                fx.bcx.ins().brif(mask_lane, if_enabled, &[], if_disabled, &[]);
                 fx.bcx.seal_block(if_enabled);
                 fx.bcx.seal_block(if_disabled);
 
@@ -864,8 +862,7 @@ pub(super) fn codegen_simd_intrinsic_call<'tcx>(
                 let if_enabled = fx.bcx.create_block();
                 let next = fx.bcx.create_block();
 
-                fx.bcx.ins().brnz(mask_lane, if_enabled, &[]);
-                fx.bcx.ins().jump(next, &[]);
+                fx.bcx.ins().brif(mask_lane, if_enabled, &[], next, &[]);
                 fx.bcx.seal_block(if_enabled);
 
                 fx.bcx.switch_to_block(if_enabled);
